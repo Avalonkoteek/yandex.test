@@ -1,21 +1,28 @@
 class Table {
-  constructor(width, height, field = []) {
-    this.WIDTH = width;
-    this.HEIGHT = height;
-    this.baseField = field;
-    // сценарии
-    this.createRandomField();
-    // this.drawTable();
-
-    setInterval(() => {
-      this.updateTable();
-    }, 1000);
-    this.drawTable();
-  }
+  constructor() {}
   WIDTH = 3;
   HEIGHT = 3;
   baseField = [];
 
+  random = (width, height) => {
+    this.WIDTH = width;
+    this.HEIGHT = height;
+    this.createRandomField();
+  };
+  file = (field = []) => {
+    this.baseField = field;
+    this.WIDTH = field[0].length;
+    this.HEIGHT = field.length;
+  };
+  start = () => {
+    console.log("start");
+    this.drawTable();
+    let timerId = setInterval(() => {
+      this.updateTable();
+      this.drawTable();
+      clearInterval(timerId);
+    }, 1000);
+  };
   updateTable = () => {
     this.baseField = [...this.updateField()];
     // console.table(this.baseField);
@@ -98,60 +105,50 @@ class Table {
   };
 }
 
-// Интерфейс
+// ======================================================================
+// ========================   Интерфейс   ===============================
+// ======================================================================
+// Команды
 const command = {
   random: (m, n) => {
     if (m < 3 || n < 3) {
       console.log("Введите значения больше 3х");
       return "((";
     }
-    WIDTH = m;
-    HEIGHT = n;
-    createBaseField();
-    drawTable();
+    let a = new Table();
+    a.random(m, n);
+    a.start();
     return "true";
   },
   file: () => {
     console.log("Загрузите текстовый файл в окне браузера");
     document.getElementById("app").innerHTML = `
-      <h1>Hello Vanilla!</h1>
+      <h1>Загрузить сюда</h1>
       <input type="file" onchange="showFile(this)">
       `;
-  },
-  start: () => {
-    setInterval(() => {
-      baseField = [...updateField()];
-      console.table(baseField);
-    }, 10000);
   }
 };
+
+// Обработка файла
 function getArrFromString(str) {
   newStr = str.replace(/ +/g, "").trim();
-  let arr = [];
-  let i = 1;
-  let start = 0;
-  let finish = 0;
-  for (let x = 1; x < newStr.length - 2; x++) {
-    if (newStr[x] == "[") {
-      start = x + 1;
-      console.log(start);
-    }
-    if (newStr[x] == "]") {
-      finish = x - 1;
-      console.log(finish);
-      console.log(newStr.substr(start, finish - 1));
-      arr.push(newStr.substr(start, finish - 1).split(","));
-    }
-  }
-  console.log(arr);
+  let arr = newStr.split("]");
+  arr.splice(arr.length - 2, arr.length - 1);
+  let newArr = arr.map(element => {
+    return element.substring(2, element.length).split(",");
+  });
+  console.log(newArr.map(element => element.map(athom => +athom)));
 }
+
 function showFile(input) {
   let file = input.files[0];
 
   let reader = new FileReader();
   reader.onload = function(event) {
     var contents = event.target.result;
-    getArrFromString(contents);
+    let a = new Table();
+    a.file(getArrFromString(contents));
+    a.start();
   };
   reader.onerror = function(event) {
     console.error(
@@ -163,4 +160,3 @@ function showFile(input) {
 console.log(
   "задать слуайное поле - command('random') \nзадать поле из файла command('file') "
 );
-let a = new Table(20, 20);
